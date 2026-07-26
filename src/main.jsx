@@ -14,13 +14,6 @@ if (typeof document !== 'undefined' && !document.getElementById('poppins-font-li
   document.head.appendChild(link);
 }
 
-if (typeof document !== 'undefined' && !document.getElementById('supabase-js-script')) {
-  const script = document.createElement('script');
-  script.id = 'supabase-js-script';
-  script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  document.head.appendChild(script);
-}
-
 const getSupabaseClient = () => {
   if (typeof window !== 'undefined' && window.supabase && window.supabase.createClient) {
     const envUrl = typeof process !== 'undefined' && process.env ? process.env.VITE_SUPABASE_URL : (window.VITE_SUPABASE_URL || '');
@@ -669,7 +662,7 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
       )}
 
       {activeTab === 'pdf' && (
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto mt-8">
+        <div className="bg-[#E5E0D9] p-8 rounded-xl border border-slate-200 shadow-sm max-w-3xl mx-auto mt-8">
            <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-[#36563D]">
              <div>
                 <h1 className="text-3xl font-black text-[#36563D]">Maandoverzicht</h1>
@@ -806,7 +799,7 @@ export default function App() {
       <header className="bg-[#36563D] text-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => {setCurrentView('DASHBOARD'); setSelectedStudentId(null);}}>
-            <div className="bg-[#36563D] border border-white/20 p-1 rounded shadow-sm flex items-center justify-center">
+            <div className="bg-white p-1 rounded shadow-sm flex items-center justify-center">
               <HacarLogo className="h-8 w-auto" />
             </div>
             <div className="hidden sm:block">
