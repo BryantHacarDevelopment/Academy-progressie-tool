@@ -3,7 +3,7 @@ import {
   AlertCircle, LogOut, ShieldCheck, BarChart3, UserPlus, 
   Search, Filter, Calendar, Award, Clock, ChevronRight, 
   ArrowLeft, Save, CheckCircle2, BookOpen, FileText, 
-  ChevronUp, ChevronDown, TrendingUp, Minus, MessageSquare, Lock, Mail
+  ChevronUp, ChevronDown, TrendingUp, Minus, MessageSquare, Lock, Mail, X
 } from 'lucide-react';
 
 if (typeof document !== 'undefined' && !document.getElementById('poppins-font-link')) {
@@ -33,30 +33,7 @@ const getSupabaseClient = () => {
 };
 
 const MOCK_STUDENTS = [
-  {
-    id: '1', name: 'Jan de Vries', photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150',
-    startDate: '01-09-2025', currentMonth: 6, progressPercentage: 78, competencyScore: 2.7,
-    lastUpdated: '22-07-2026', status: 'Loopt voor', teacher: 'Mark Visser',
-    historyScores: [10, 25, 45, 60, 72, 78]
-  },
-  {
-    id: '2', name: 'Daan van Dijk', photo: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80&w=150',
-    startDate: '01-11-2025', currentMonth: 4, progressPercentage: 52, competencyScore: 2.1,
-    lastUpdated: '18-07-2026', status: 'Op schema', teacher: 'Mark Visser',
-    historyScores: [5, 15, 30, 52]
-  },
-  {
-    id: '3', name: 'Sanne Bakker', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-    startDate: '15-01-2026', currentMonth: 2, progressPercentage: 25, competencyScore: 1.6,
-    lastUpdated: '10-07-2026', status: 'Aandacht nodig', teacher: 'Peter Hermans',
-    historyScores: [10, 25]
-  },
-  {
-    id: '4', name: 'Lars Meijer', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-    startDate: '01-02-2026', currentMonth: 1, progressPercentage: 15, competencyScore: 2.0,
-    lastUpdated: '21-07-2026', status: 'Op schema', teacher: 'Peter Hermans',
-    historyScores: [15]
-  }
+  { id: '1', name: 'Demo Data (Database nog niet gekoppeld)', photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150', start_date: '01-09-2025', current_month: 1, status: 'Op schema', teacher: 'Systeem' }
 ];
 
 const MODULES_DATA = [
@@ -101,11 +78,8 @@ function GroupLineChart() {
   const paddingY = 20;
 
   const data = MODULES_DATA.map((m, i) => {
-    const jan = Math.min(100, Math.max(0, 95 - (i * 2)));
-    const daan = Math.min(100, Math.max(0, 80 - (i * 4)));
-    const sanne = Math.max(0, 70 - (i * 6));
-    const avg = Math.round((jan + daan + sanne) / 3);
-    return { name: `M${i+1}`, jan, daan, sanne, avg };
+    const avg = Math.round(Math.max(0, 90 - (i * 5)));
+    return { name: `M${i+1}`, avg };
   });
 
   const getPoints = (key) => data.map((d, i) => `${paddingX + (i * ((chartW - paddingX*2) / 13))},${paddingY + chartH - (d[key] / 100) * chartH}`).join(" ");
@@ -115,9 +89,6 @@ function GroupLineChart() {
       <h3 className="text-lg font-bold text-[#1D252C] mb-4">Groepstrend per Module</h3>
       <div className="flex gap-4 mb-4 text-xs font-semibold">
         <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-[#36563D] mr-1"></span> Klas Gemiddelde</span>
-        <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-blue-400 mr-1"></span> Jan</span>
-        <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-purple-400 mr-1"></span> Daan</span>
-        <span className="flex items-center"><span className="w-3 h-3 rounded-full bg-rose-400 mr-1"></span> Sanne</span>
       </div>
       <div className="min-w-[700px]">
         <svg viewBox={`0 0 ${chartW} ${chartH + 40}`} className="w-full h-auto text-[#1D252C]">
@@ -130,9 +101,6 @@ function GroupLineChart() {
           {data.map((d, i) => (
              <text key={i} x={paddingX + (i * ((chartW - paddingX*2) / 13))} y={chartH + paddingY + 20} fontSize="10" textAnchor="middle" fill="#94a3b8">{d.name}</text>
           ))}
-          <polyline points={getPoints('jan')} fill="none" stroke="#60a5fa" strokeWidth="2" opacity="0.6"/>
-          <polyline points={getPoints('daan')} fill="none" stroke="#c084fc" strokeWidth="2" opacity="0.6"/>
-          <polyline points={getPoints('sanne')} fill="none" stroke="#fb7185" strokeWidth="2" opacity="0.6"/>
           <polyline points={getPoints('avg')} fill="none" stroke="#36563D" strokeWidth="4" />
           {data.map((d, i) => (
             <circle key={i} cx={paddingX + (i * ((chartW - paddingX*2) / 13))} cy={paddingY + chartH - (d.avg / 100) * chartH} r="4" fill="#F2C633" />
@@ -152,11 +120,10 @@ function LoginView({ onLogin }) {
   const handleSupabaseLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');
-
     const supabase = getSupabaseClient();
 
-    if (!supabase || !email) {
-      onLogin({ role: 'DOCENT', name: 'Demo Docent' });
+    if (!supabase) {
+      setErrorMsg('Geen database verbinding gevonden. Controleer je Vercel instellingen.');
       return;
     }
 
@@ -165,20 +132,17 @@ function LoginView({ onLogin }) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
+      // Profiel ophalen
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
 
       onLogin({
         id: data.user.id,
         email: data.user.email,
         role: profile?.role || 'DOCENT',
-        name: profile?.full_name || data.user.email
+        name: profile?.full_name || data.user.email.split('@')[0]
       });
     } catch (err) {
-      setErrorMsg(err.message || 'Inloggen mislukt. Controleer e-mail en wachtwoord.');
+      setErrorMsg('Inloggen mislukt. Controleer je e-mail en wachtwoord.');
     } finally {
       setLoading(false);
     }
@@ -192,7 +156,7 @@ function LoginView({ onLogin }) {
             <HacarLogo className="h-24 w-auto" />
           </div>
           <h1 className="text-2xl font-bold text-[#1D252C]">Hacar Academy</h1>
-          <p className="text-xs text-slate-500 mt-1">Log in met je e-mail en wachtwoord</p>
+          <p className="text-xs text-slate-500 mt-1">Log in met je account</p>
         </div>
 
         {errorMsg && (
@@ -213,6 +177,7 @@ function LoginView({ onLogin }) {
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#36563D]" 
+                required
               />
             </div>
           </div>
@@ -227,6 +192,7 @@ function LoginView({ onLogin }) {
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
                 className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#36563D]" 
+                required
               />
             </div>
           </div>
@@ -234,43 +200,25 @@ function LoginView({ onLogin }) {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-[#36563D] hover:bg-[#2a4330] text-white py-3 px-4 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm"
+            className="w-full bg-[#36563D] hover:bg-[#2a4330] text-white py-3 px-4 rounded-lg font-semibold text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm disabled:opacity-70"
           >
             {loading ? <span>Bezig met inloggen...</span> : <><ShieldCheck className="w-5 h-5" /><span>Inloggen</span></>}
           </button>
         </form>
-
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-          <p className="text-xs text-slate-400 mb-3">Snel testen zonder inloggegevens?</p>
-          <div className="flex gap-2">
-            <button 
-              type="button" 
-              onClick={() => onLogin({ role: 'DOCENT', name: 'Mark Visser (Docent)' })}
-              className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-[#1D252C] rounded text-xs font-medium transition"
-            >
-              Demo Docent
-            </button>
-            <button 
-              type="button" 
-              onClick={() => onLogin({ role: 'MANAGER', name: 'Directie (Manager)' })}
-              className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-[#1D252C] rounded text-xs font-medium transition"
-            >
-              Demo Manager
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
 }
 
-function StudentDashboard({ onSelectStudent, userRole, goAnalysis, students }) {
+function StudentDashboard({ onSelectStudent, userRole, goAnalysis, students, onRefresh, currentUser }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentDate, setNewStudentDate] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
-  const studentList = (students && students.length > 0) ? students : MOCK_STUDENTS;
-
-  const filteredStudents = studentList.filter(student => {
+  const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || student.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -285,20 +233,64 @@ function StudentDashboard({ onSelectStudent, userRole, goAnalysis, students }) {
     }
   };
 
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    if (!newStudentName || !newStudentDate) return;
+    setIsAdding(true);
+    
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      try {
+        const { error } = await supabase.from('students').insert([{
+          name: newStudentName,
+          start_date: newStudentDate,
+          teacher: currentUser.name || 'Docent'
+        }]);
+        if (!error) {
+          setIsModalOpen(false);
+          setNewStudentName('');
+          setNewStudentDate('');
+          onRefresh(); // Refresh the list
+        } else {
+          alert('Fout bij toevoegen: ' + error.message);
+        }
+      } catch(err) {
+        console.error(err);
+      }
+    }
+    setIsAdding(false);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-['Poppins',sans-serif]">
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl border-l-4 border-[#FE615A] shadow-sm">
-        <div className="flex items-center text-[#1D252C]">
-          <AlertCircle className="w-5 h-5 text-[#FE615A] mr-3 flex-shrink-0" />
-          <div>
-            <span className="font-bold text-sm block">Vastloop melding</span>
-            <span className="text-xs text-slate-500">Sanne Bakker heeft al 14 dagen geen voortgang geboekt.</span>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 font-['Poppins',sans-serif] relative">
+      
+      {/* Modal Toevoegen Leerling */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-[#36563D] text-white">
+              <h3 className="font-bold">Nieuwe Leerling Toevoegen</h3>
+              <button onClick={() => setIsModalOpen(false)} className="hover:text-slate-300 transition"><X className="w-5 h-5"/></button>
+            </div>
+            <form onSubmit={handleAddStudent} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Volledige Naam</label>
+                <input type="text" required value={newStudentName} onChange={e=>setNewStudentName(e.target.value)} placeholder="Bijv. Jan de Vries" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#36563D]" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Startdatum</label>
+                <input type="date" required value={newStudentDate} onChange={e=>setNewStudentDate(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#36563D]" />
+              </div>
+              <div className="pt-4 flex justify-end gap-2">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold transition">Annuleren</button>
+                <button type="submit" disabled={isAdding} className="px-4 py-2 bg-[#36563D] hover:bg-[#2a4330] text-white rounded-lg text-sm font-semibold transition flex items-center">
+                  {isAdding ? 'Bezig...' : 'Opslaan'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-        <button onClick={() => onSelectStudent('3')} className="text-xs bg-[#E5E0D9] hover:bg-[#d6d0c7] px-3 py-1.5 rounded-lg font-semibold text-[#1D252C] transition">
-          Bekijk Sanne
-        </button>
-      </div>
+      )}
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
         <div>
@@ -311,7 +303,7 @@ function StudentDashboard({ onSelectStudent, userRole, goAnalysis, students }) {
               <span>Analyse & Draaitabellen</span>
            </button>
            {userRole !== 'MANAGER' && (
-             <button className="flex items-center space-x-2 bg-[#F2C633] hover:bg-yellow-400 text-[#1D252C] font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm text-sm">
+             <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 bg-[#F2C633] hover:bg-yellow-400 text-[#1D252C] font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm text-sm">
                 <UserPlus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nieuwe Leerling</span>
              </button>
@@ -335,66 +327,75 @@ function StudentDashboard({ onSelectStudent, userRole, goAnalysis, students }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        {filteredStudents.map((student) => (
-          <div key={student.id} onClick={() => onSelectStudent(student.id)} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:border-[#36563D] transition-all hover:shadow-md cursor-pointer overflow-hidden group">
-            <div className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-4">
-                  <img src={student.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'} alt={student.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#E5E0D9]" />
-                  <div>
-                    <h3 className="text-lg font-bold text-[#1D252C] group-hover:text-[#36563D] transition-colors">{student.name}</h3>
-                    <p className="text-xs text-slate-500 flex items-center mt-1">
-                      <Calendar className="w-3.5 h-3.5 mr-1" /> Start: {student.startDate || student.start_date} • <span className="font-semibold text-slate-700 ml-1">Maand {student.currentMonth || student.current_month || 1}</span>
-                    </p>
+      {filteredStudents.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+           <UserPlus className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+           <h3 className="text-lg font-bold text-[#1D252C] mb-2">Nog geen leerlingen gevonden</h3>
+           <p className="text-sm text-slate-500 mb-6">Voeg je eerste leerling toe om te starten met de voortgangsregistratie.</p>
+           <button onClick={() => setIsModalOpen(true)} className="bg-[#36563D] hover:bg-[#2a4330] text-white px-6 py-2.5 rounded-lg font-bold shadow transition">
+              + Leerling Toevoegen
+           </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+          {filteredStudents.map((student) => (
+            <div key={student.id} onClick={() => onSelectStudent(student.id)} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:border-[#36563D] transition-all hover:shadow-md cursor-pointer overflow-hidden group">
+              <div className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-4">
+                    <img src={student.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'} alt={student.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#E5E0D9]" />
+                    <div>
+                      <h3 className="text-lg font-bold text-[#1D252C] group-hover:text-[#36563D] transition-colors">{student.name}</h3>
+                      <p className="text-xs text-slate-500 flex items-center mt-1">
+                        <Calendar className="w-3.5 h-3.5 mr-1" /> Start: {student.start_date} • <span className="font-semibold text-slate-700 ml-1">Maand {student.current_month || 1}</span>
+                      </p>
+                    </div>
+                  </div>
+                  {getStatusBadge(student.status)}
+                </div>
+                <hr className="my-4 border-[#E5E0D9]" />
+                <div className="mb-4">
+                  <div className="flex justify-between items-center text-xs mb-1.5">
+                    <span className="font-semibold text-slate-600">Voortgang (behandeld)</span>
+                    <span className="font-bold text-[#36563D]">{student.progress_percentage || 0}%</span>
+                  </div>
+                  <div className="w-full bg-[#E5E0D9] rounded-full h-2.5 overflow-hidden">
+                    <div className="bg-[#36563D] h-2.5 rounded-full transition-all duration-500" style={{ width: `${student.progress_percentage || 0}%` }}></div>
                   </div>
                 </div>
-                {getStatusBadge(student.status)}
-              </div>
-              <hr className="my-4 border-[#E5E0D9]" />
-              <div className="mb-4">
-                <div className="flex justify-between items-center text-xs mb-1.5">
-                  <span className="font-semibold text-slate-600">Voortgang (behandeld)</span>
-                  <span className="font-bold text-[#36563D]">{student.progressPercentage || 0}%</span>
+                <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-[#E5E0D9] mb-4 text-xs">
+                  <div>
+                    <span className="text-slate-400 block mb-0.5">Gem. Competentie</span>
+                    <span className="font-bold text-[#1D252C] flex items-center"><Award className="w-3.5 h-3.5 mr-1 text-[#F2C633]" /> {student.competency_score || '0.0'} / 3.0</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block mb-0.5">Begeleider</span>
+                    <span className="font-semibold text-[#1D252C]">{student.teacher || 'Niet toegewezen'}</span>
+                  </div>
                 </div>
-                <div className="w-full bg-[#E5E0D9] rounded-full h-2.5 overflow-hidden">
-                  <div className="bg-[#36563D] h-2.5 rounded-full transition-all duration-500" style={{ width: `${student.progressPercentage || 0}%` }}></div>
+                <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-[#E5E0D9]">
+                  <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1" /> Gewijzigd: {student.last_updated || 'Vandaag'}</span>
+                  <span className="text-[#36563D] font-semibold flex items-center group-hover:translate-x-1 transition-transform">Profiel <ChevronRight className="w-4 h-4 ml-0.5" /></span>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-[#E5E0D9] mb-4 text-xs">
-                <div>
-                  <span className="text-slate-400 block mb-0.5">Gem. Competentie</span>
-                  <span className="font-bold text-[#1D252C] flex items-center"><Award className="w-3.5 h-3.5 mr-1 text-[#F2C633]" /> {student.competencyScore || '2.0'} / 3.0</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block mb-0.5">Begeleider</span>
-                  <span className="font-semibold text-[#1D252C]">{student.teacher || 'Mark Visser'}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-[#E5E0D9]">
-                <span className="flex items-center"><Clock className="w-3.5 h-3.5 mr-1" /> Gewijzigd: {student.lastUpdated || 'Vandaag'}</span>
-                <span className="text-[#36563D] font-semibold flex items-center group-hover:translate-x-1 transition-transform">Profiel <ChevronRight className="w-4 h-4 ml-0.5" /></span>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 function StudentProfile({ studentId, onBack, userRole, showNotification, students }) {
-  const studentList = (students && students.length > 0) ? students : MOCK_STUDENTS;
-  const student = studentList.find(s => s.id === studentId) || studentList[0];
+  const student = students.find(s => s.id === studentId) || students[0];
 
   const [activeTab, setActiveTab] = useState('modules');
   const [expandedModule, setExpandedModule] = useState('m1');
   const [scores, setScores] = useState({});
-  const [moduleNotes, setModuleNotes] = useState({});
   const [notes, setNotes] = useState({});
   const [competencyScores, setCompetencyScores] = useState({});
-  const [competencyNotes, setCompetencyNotes] = useState({});
   const isReadOnly = userRole === 'MANAGER';
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     async function fetchStudentScores() {
@@ -437,10 +438,11 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
 
   const handleSave = async () => {
     if (isReadOnly) return;
-
+    setIsSaving(true);
     const supabase = getSupabaseClient();
     if (supabase) {
       try {
+        // Collect all updates
         const updates = Object.keys(scores).map(itemId => ({
           student_id: studentId,
           item_id: itemId,
@@ -451,11 +453,20 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
         if (updates.length > 0) {
           await supabase.from('scores').upsert(updates, { onConflict: 'student_id,item_id' });
         }
+        
+        // Update student progress globally (Simple mock calculation for now)
+        const totalScored = Object.values(scores).filter(s => s > 0).length;
+        const totalItems = MODULES_DATA.reduce((acc, mod) => acc + mod.items.length, 0);
+        const progress = Math.round((totalScored / totalItems) * 100);
+        
+        await supabase.from('students').update({ progress_percentage: progress }).eq('id', studentId);
+        
       } catch (err) {
         console.error("Opslaan mislukt:", err);
       }
     }
 
+    setIsSaving(false);
     showNotification();
   };
 
@@ -467,8 +478,8 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
         </button>
         <div className="flex items-center space-x-3">
           {isReadOnly && <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">Kijk-modus</span>}
-          <button onClick={handleSave} disabled={isReadOnly} className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm ${!isReadOnly ? 'bg-[#36563D] text-white hover:bg-[#2a4330]' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}>
-            <Save className="w-4 h-4" /> <span>Opslaan</span>
+          <button onClick={handleSave} disabled={isReadOnly || isSaving} className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm ${!isReadOnly ? 'bg-[#36563D] text-white hover:bg-[#2a4330]' : 'bg-slate-300 text-slate-500 cursor-not-allowed'}`}>
+            <Save className="w-4 h-4" /> <span>{isSaving ? 'Opslaan...' : 'Opslaan'}</span>
           </button>
         </div>
       </div>
@@ -483,25 +494,24 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
           </div>
           <div>
             <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Begeleiding</p>
-            <p className="text-sm text-[#1D252C] font-medium"><ShieldCheck className="inline w-3.5 h-3.5 mr-1 text-slate-400"/> Docent: {student.teacher || 'Mark Visser'}</p>
+            <p className="text-sm text-[#1D252C] font-medium"><ShieldCheck className="inline w-3.5 h-3.5 mr-1 text-slate-400"/> Docent: {student.teacher || 'Systeem'}</p>
           </div>
           <div>
             <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Tijdlijn</p>
-            <p className="text-sm text-[#1D252C]"><Calendar className="inline w-3.5 h-3.5 mr-1 text-slate-400"/> Start: {student.startDate || student.start_date || '01-09-2025'}</p>
-            <p className="text-sm text-[#1D252C] mt-1"><CheckCircle2 className="inline w-3.5 h-3.5 mr-1 text-slate-400"/> Laatst: {student.lastUpdated || 'Vandaag'}</p>
+            <p className="text-sm text-[#1D252C]"><Calendar className="inline w-3.5 h-3.5 mr-1 text-slate-400"/> Start: {student.start_date || 'N/A'}</p>
+            <p className="text-sm text-[#1D252C] mt-1"><CheckCircle2 className="inline w-3.5 h-3.5 mr-1 text-slate-400"/> Laatst: {student.last_updated || 'Vandaag'}</p>
           </div>
         </div>
       </div>
 
       <div className="flex space-x-1 bg-[#E5E0D9] p-1 rounded-xl w-full max-w-2xl">
-        {['modules', 'competenties', 'historie', 'pdf'].map(tab => (
+        {['modules', 'competenties', 'pdf'].map(tab => (
            <button 
              key={tab} onClick={() => setActiveTab(tab)}
              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold flex items-center justify-center transition-all capitalize ${activeTab === tab ? 'bg-white text-[#36563D] shadow-sm' : 'text-slate-600 hover:text-[#1D252C]'}`}
            >
              {tab === 'modules' && <BookOpen className="w-4 h-4 mr-2" />}
              {tab === 'competenties' && <Award className="w-4 h-4 mr-2" />}
-             {tab === 'historie' && <Clock className="w-4 h-4 mr-2" />}
              {tab === 'pdf' && <FileText className="w-4 h-4 mr-2" />}
              {tab}
            </button>
@@ -530,16 +540,7 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
                    <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full hidden sm:block">{module.items.length} items</span>
                  </div>
                  
-                 <div className="mt-3 md:mt-0 md:w-1/3 flex items-center gap-3">
-                   <input 
-                     type="text" 
-                     placeholder={`Notitie over module...`}
-                     value={moduleNotes[module.id] || ''}
-                     onChange={(e) => setModuleNotes({...moduleNotes, [module.id]: e.target.value})}
-                     onClick={(e) => e.stopPropagation()}
-                     disabled={isReadOnly}
-                     className="w-full bg-slate-50 border border-slate-200 rounded text-xs px-3 py-2 focus:ring-1 focus:ring-[#36563D] focus:outline-none transition-all"
-                   />
+                 <div className="mt-3 md:mt-0 flex items-center gap-3">
                    <div className="text-slate-400">
                      {expandedModule === module.id ? <ChevronUp className="w-5 h-5"/> : <ChevronDown className="w-5 h-5"/>}
                    </div>
@@ -552,7 +553,6 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
                     <thead>
                       <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                         <th className="px-6 py-3 font-semibold w-1/3">Onderdeel</th>
-                        <th className="px-4 py-3 font-semibold text-center w-16">Trend</th>
                         <th className="px-4 py-3 font-semibold w-[280px]">Score beoordeling</th>
                         <th className="px-6 py-3 font-semibold">Notitie Docent per onderdeel</th>
                       </tr>
@@ -561,15 +561,11 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
                       {module.items.map((item, idx) => {
                         const itemKey = `${module.id}-${idx}`;
                         const currentScore = scores[itemKey]; 
-                        const mockTrend = idx % 3 === 0 ? <TrendingUp className="w-4 h-4 text-[#3EC55F]" /> : <Minus className="w-4 h-4 text-slate-300" />;
 
                         return (
                           <tr key={itemKey} className="hover:bg-slate-50/50 transition-colors group">
                             <td className="px-6 py-4 font-medium text-[#1D252C]">
                               {item}
-                            </td>
-                            <td className="px-4 py-4 text-center align-middle">
-                              <div className="flex justify-center">{mockTrend}</div>
                             </td>
                             <td className="px-4 py-4">
                               <div className="flex gap-1.5 p-1 bg-slate-100/50 rounded-lg inline-flex">
@@ -635,34 +631,9 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
                         </button>
                       ))}
                     </div>
-                    <div className="relative flex-1 w-full mt-2 xl:mt-0">
-                       <MessageSquare className="absolute left-3 top-2.5 w-4 h-4 text-slate-300" />
-                       <input 
-                         type="text" 
-                         placeholder="Notitie (bijv. toelichting)..." 
-                         disabled={isReadOnly}
-                         value={competencyNotes[compKey] || ''}
-                         onChange={(e) => setCompetencyNotes(prev => ({...prev, [compKey]: e.target.value}))}
-                         className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-[#36563D] focus:outline-none transition-all" 
-                       />
-                    </div>
                   </div>
                 );
               })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'historie' && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 max-w-3xl mx-auto">
-          <h3 className="text-xl font-bold text-[#1D252C] mb-8 border-b pb-4">Wijzigingshistorie</h3>
-          <div className="relative border-l-2 border-[#E5E0D9] ml-3 space-y-8">
-            <div className="relative pl-6">
-              <span className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#36563D] border-2 border-white"></span>
-              <p className="text-sm font-bold text-[#1D252C]">Score gewijzigd: PBM's correct gebruiken</p>
-              <p className="text-sm text-slate-500 mt-1">Van <span className="font-bold text-orange-500">2 (Begeleiding)</span> naar <span className="font-bold text-[#3EC55F]">4 (Zelfstandig)</span></p>
-              <p className="text-xs text-slate-400 mt-1.5 flex items-center"><Clock className="w-3.5 h-3.5 mr-1"/> Recent opgeslagen</p>
             </div>
           </div>
         </div>
@@ -673,14 +644,14 @@ function StudentProfile({ studentId, onBack, userRole, showNotification, student
            <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-[#36563D]">
              <div>
                 <h1 className="text-3xl font-black text-[#36563D]">Maandoverzicht</h1>
-                <p className="text-sm font-semibold text-slate-500">Academy Basis Elektra • Maand {student.currentMonth || 1}</p>
+                <p className="text-sm font-semibold text-slate-500">Academy Basis Elektra • Maand {student.current_month || 1}</p>
              </div>
              <HacarLogo className="h-12 w-auto" />
            </div>
            
            <div className="grid grid-cols-2 gap-6 mb-8 text-sm">
               <div><span className="text-slate-400 block">Naam Leerling</span><span className="font-bold text-[#1D252C] text-lg">{student.name}</span></div>
-              <div><span className="text-slate-400 block">Docent/Begeleider</span><span className="font-bold text-[#1D252C] text-lg">{student.teacher || 'Mark Visser'}</span></div>
+              <div><span className="text-slate-400 block">Docent/Begeleider</span><span className="font-bold text-[#1D252C] text-lg">{student.teacher || 'Systeem'}</span></div>
            </div>
 
            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
@@ -715,51 +686,6 @@ function AnalysisView({ onBack }) {
        {activeTab === 'group' && (
          <div className="space-y-8">
            <GroupLineChart />
-           <div className="bg-white p-6 rounded-xl border border-[#E5E0D9] shadow-sm overflow-x-auto">
-             <h3 className="text-lg font-bold text-[#1D252C] mb-4">Risico Matrix (Heatmap)</h3>
-             <table className="w-full text-xs text-left min-w-[1000px]">
-               <thead>
-                 <tr className="border-b border-[#E5E0D9]">
-                    <th className="py-2 px-3 font-semibold text-slate-500 w-48">Leerling</th>
-                    {MODULES_DATA.map((m, i) => (
-                      <th key={i} className="py-2 px-1 font-semibold text-slate-500 align-bottom h-36">
-                        <div className="w-8">
-                          <div className="transform -rotate-45 origin-bottom-left whitespace-nowrap text-[10px] w-24 mb-2 font-medium">
-                            {m.title.length > 22 ? m.title.substring(0, 22) + '...' : m.title}
-                          </div>
-                        </div>
-                      </th>
-                    ))}
-                 </tr>
-               </thead>
-               <tbody>
-                 {MOCK_STUDENTS.map(student => (
-                   <tr key={student.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="py-3 px-3 font-bold text-[#1D252C] flex items-center gap-2">
-                        <img src={student.photo} className="w-6 h-6 rounded-full border border-[#E5E0D9]" alt=""/> {student.name}
-                      </td>
-                      {MODULES_DATA.map((_, i) => {
-                        let pct = Math.max(0, Math.min(100, Math.round(student.progressPercentage - (i * 8) + (parseInt(student.id) * 4))));
-                        if (i > student.currentMonth + 2) pct = 0; 
-                        
-                        let colorClass = "bg-[#3EC55F] text-white";
-                        if (pct === 0) colorClass = "bg-[#E5E0D9] text-slate-500";
-                        else if (pct < 40) colorClass = "bg-[#FE615A] text-white";
-                        else if (pct < 75) colorClass = "bg-[#F2C633] text-[#1D252C]";
-
-                        return (
-                          <td key={i} className="py-3 px-1 text-center">
-                            <div className={`px-1.5 py-1 text-[10px] font-bold rounded ${colorClass} mx-auto inline-block shadow-sm`}>
-                              {pct}%
-                            </div>
-                          </td>
-                        );
-                      })}
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
         </div>
       )}
     </div>
@@ -772,22 +698,34 @@ export default function App() {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [currentView, setCurrentView] = useState('DASHBOARD'); 
   const [showSaveToast, setShowSaveToast] = useState(false);
+  const [dbConnected, setDbConnected] = useState(false);
+
+  const loadStudentsFromSupabase = async () => {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      setStudents(MOCK_STUDENTS); // Fallback to mock only if no config
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.from('students').select('*').order('created_at', { ascending: false });
+      if (!error) {
+        setStudents(data || []);
+        setDbConnected(true);
+      } else {
+        console.error("Fout bij ophalen leerlingen:", error);
+      }
+    } catch (err) {
+      console.error("Geen verbinding mogelijk, terugvallen op mockdata.", err);
+      setStudents(MOCK_STUDENTS);
+    }
+  };
 
   useEffect(() => {
-    async function loadStudentsFromSupabase() {
-      const supabase = getSupabaseClient();
-      if (!supabase) return;
-      try {
-        const { data } = await supabase.from('students').select('*');
-        if (data && data.length > 0) {
-          setStudents(data);
-        }
-      } catch (err) {
-        console.error("Geen verbinding met Supabase students tabel, terugvallen op mockdata:", err);
-      }
+    if (user) {
+      loadStudentsFromSupabase();
     }
-    loadStudentsFromSupabase();
-  }, []);
+  }, [user]);
 
   const handleLogin = (userInfo) => {
     setUser(userInfo);
@@ -815,7 +753,7 @@ export default function App() {
           </div>
           <div className="flex items-center space-x-4 text-sm font-medium">
             <span className="bg-[#1D252C]/30 px-3 py-1 rounded-full border border-white/10 shadow-inner">
-               Rol: <span className="text-[#F2C633]">{user.role}</span> ({user.name || user.email})
+               Rol: <span className="text-[#F2C633]">{user.role}</span> ({user.name})
             </span>
             <button onClick={() => setUser(null)} className="hover:text-[#F2C633] transition flex items-center">
               <LogOut className="w-4 h-4 mr-1" /> Uitloggen
@@ -830,13 +768,15 @@ export default function App() {
            userRole={user.role}
            goAnalysis={() => setCurrentView('ANALYSIS')}
            students={students}
+           onRefresh={loadStudentsFromSupabase}
+           currentUser={user}
          />
       )}
       
       {currentView === 'PROFILE' && selectedStudentId && (
          <StudentProfile 
            studentId={selectedStudentId} 
-           onBack={() => { setSelectedStudentId(null); setCurrentView('DASHBOARD'); }} 
+           onBack={() => { setSelectedStudentId(null); setCurrentView('DASHBOARD'); loadStudentsFromSupabase(); }} 
            userRole={user.role}
            showNotification={showNotification}
            students={students}
