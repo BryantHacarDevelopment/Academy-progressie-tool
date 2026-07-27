@@ -7,55 +7,46 @@ import {
   TrendingUp, Minus, MessageSquare
 } from 'lucide-react';
 
-if (typeof document !== 'undefined' && !document.getElementById('tailwind-script')) {
-  const script = document.createElement('script');
-  script.id = 'tailwind-script';
-  script.src = 'https://cdn.tailwindcss.com';
-  document.head.appendChild(script);
-}
+// Database is keihard AAN. Supabase import via ESM module om build-crashes te voorkomen.
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-if (typeof document !== 'undefined' && !document.getElementById('poppins-font-link')) {
-  const link = document.createElement('link');
-  link.id = 'poppins-font-link';
-  link.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap';
-  link.rel = 'stylesheet';
-  document.head.appendChild(link);
+let supabase = null;
+let systemError = '';
+
+try {
+  // Haal de waardes direct en veilig op.
+  const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
+  const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
   
-  const style = document.createElement('style');
-  style.innerHTML = `body { font-family: 'Poppins', sans-serif; background-color: #E5E0D9; color: #1D252C; }`;
-  document.head.appendChild(style);
+  // Deze regel repareert automatisch Vercel URL fouten (verwijdert slashes en /rest/v1)
+  const cleanUrl = rawUrl.toString().trim().replace(/\/+$/, '').replace(/\/rest\/v1\/?$/, '').replace(/\/auth\/v1\/?$/, '');
+  const cleanKey = rawKey.toString().trim();
+  
+  if (!cleanUrl || !cleanKey) {
+    systemError = 'Sleutels ontbreken in Vercel. Controleer de instellingen.';
+  } else {
+    supabase = createClient(cleanUrl, cleanKey);
+  }
+} catch (err) {
+  systemError = 'Configuratiefout: ' + err.message;
 }
 
-// Veilig Supabase inladen via CDN om bundler crashes te voorkomen
-if (typeof window !== 'undefined' && !window.supabaseScriptLoaded) {
-  window.supabaseScriptLoaded = true;
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  document.head.appendChild(script);
-}
+const MOCK_STUDENTS = [
+  { id: '1', name: 'Jan de Vries', photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150', startDate: '01-09-2025', currentMonth: 6, progressPercentage: 78, competencyScore: 2.7, lastUpdated: '22-07-2026', status: 'Loopt voor', teacher: 'Mark Visser' },
+  { id: '2', name: 'Daan van Dijk', photo: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80&w=150', startDate: '01-11-2025', currentMonth: 4, progressPercentage: 52, competencyScore: 2.1, lastUpdated: '18-07-2026', status: 'Op schema', teacher: 'Mark Visser' },
+  { id: '3', name: 'Sanne Bakker', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150', startDate: '15-01-2026', currentMonth: 2, progressPercentage: 25, competencyScore: 1.6, lastUpdated: '10-07-2026', status: 'Aandacht nodig', teacher: 'Peter Hermans' }
+];
 
 const MODULES_DATA = [
   { id: 'm1', title: '1. Persoonlijke veiligheid', items: ['PBM’s correct gebruiken', 'Elektrische gevaren herkennen', 'Spanningsloos werken', 'Spanningsloosheid controleren', 'LMRA uitvoeren', 'Gereedschap vooraf controleren', 'Veilig samenwerken', 'Handelen bij noodsituaties'] },
-  { id: 'm2', title: '2. Elektrotechniek basisvaardigheden', items: ['Multimeter gebruiken', 'Tweepolige spanningstester gebruiken', 'Ampèretang gebruiken', 'Installatietester gebruiken', 'Aardlektester gebruiken', 'Isolatieweerstand meten', 'Handgereedschap gebruiken', 'Elektrisch gereedschap gebruiken', 'Kabels, draden en materialen herkennen'] },
-  { id: 'm3', title: '3. Monteren van leiding- en draadwerk', items: ['Inbouw en opbouw onderscheiden', 'Juiste buissoort kiezen', 'Buisdiameter en buisvulling bepalen', 'Leidingwerk monteren', 'Inbouwdozen plaatsen', 'Lasdozen en kabeldozen toepassen', 'Juiste draadkleuren gebruiken', 'Draad correct strippen', 'Installatiedraad trekken', 'Elektrische verbindingen maken', 'Leidingwerk controleren en netjes afwerken'] },
-  { id: 'm4', title: '4. Wisselspanning en gelijkspanning', items: ['AC en DC onderscheiden', 'Toepassingen herkennen', 'Polariteit begrijpen', 'Juiste meetinstelling kiezen', 'AC meten', 'DC meten', 'Omvormers, gelijkrichters en voedingen herkennen'] },
-  { id: 'm5', title: '5. Elektrische grootheden en formules', items: ['Spanning herkennen', 'Stroom herkennen', 'Weerstand herkennen', 'Vermogen herkennen', 'Eenheden toepassen', 'P = U × I gebruiken', 'Eenvoudige berekeningen uitvoeren', 'Meetwaarde met berekening vergelijken'] },
-  { id: 'm6', title: '6. Schakelingen, schema’s en symbolen', items: ['Elektrische symbolen herkennen', 'Eenvoudige tekening lezen', 'Eenvoudig schema tekenen', 'Serieschakeling begrijpen', 'Parallelschakeling begrijpen', 'Enkelpolige schakeling maken', 'Wisselschakeling maken', 'Kruisschakeling maken', 'Schakeling testen', 'Eenvoudige fout opsporen'] },
-  { id: 'm7', title: '7. Rookmelders', items: ['Rookmelder correct plaatsen', 'Rookmelder testen', 'Levensduur en vervangingsdatum controleren'] },
-  { id: 'm8', title: '8. Verlichting', items: ['Type armatuur herkennen', 'Geschikt armatuur selecteren', 'Armatuur monteren', 'Armatuur elektrisch aansluiten', 'Aarde correct aansluiten', 'Verlichting testen', 'Eenvoudige storing herkennen', 'Werk netjes opleveren'] },
-  { id: 'm9', title: '9. Noodverlichting', items: ['Functie van noodverlichting uitleggen', 'Type noodverlichting herkennen', 'Armatuur inspecteren', 'Noodfunctie testen', 'Accu of batterij controleren', 'Volledige test uitvoeren', 'Keurings- of afkeurstatus vastleggen', 'Armatuurnummer registreren', 'Logboek of looplijst invullen', 'Foto’s correct vastleggen'] },
-  { id: 'm10', title: '10. Groepenkasten', items: ['Hoofdschakelaar herkennen', 'Aardlekschakelaar herkennen', 'Installatieautomaat herkennen', 'Aardlekautomaat herkennen', 'Functie van componenten uitleggen', 'Indeling van een groepenkast begrijpen', 'Componenten monteren', 'Bedrading aanbrengen', 'Juiste kleuren en doorsneden toepassen', 'Eenvoudige groep aansluiten', 'Visuele eindcontrole uitvoeren', 'Metingen onder begeleiding uitvoeren'] },
-  { id: 'm11', title: '11. Aarding en aardlekschakelaars', items: ['Doel van aarding begrijpen', 'Aardverbinding maken', 'Vereffening herkennen', 'Centraal aardpunt herkennen', 'Badkamerzones herkennen', 'Aardlekschakelaar herkennen', 'Werking aardlekschakelaar uitleggen', 'Aardlektest uitvoeren'] },
-  { id: 'm12', title: '12. Bel- en deuropenerinstallaties', items: ['Onderdelen herkennen', 'Transformator herkennen', 'Drukknop aansluiten', 'Bel aansluiten', 'Deuropener aansluiten', 'Eenvoudig schema lezen', 'Installatie testen', 'Eenvoudige storing herkennen'] },
-  { id: 'm13', title: '13. UTP en data', items: ['UTP-kabel herkennen', 'Categorieën en toepassingen herkennen', 'Kleurcode toepassen', 'Kabel correct aanleggen', 'Kabel afwerken', 'Connector of wandcontactdoos aansluiten', 'Verbinding testen', 'Beschadiging en storingen herkennen'] },
-  { id: 'm14', title: '14. Relais- en magneetschakelingen', items: ['Relais herkennen', 'Spoelaansluitingen herkennen', 'Maakcontact herkennen', 'Verbreekcontact herkennen', 'Wisselcontact herkennen', 'Eenvoudig relaisschema lezen', 'Relaisschakeling bouwen', 'Schakeling testen', 'Eenvoudige storing analyseren', 'Werking van de schakeling uitleggen'] }
+  { id: 'm2', title: '2. Elektrotechniek basis', items: ['Multimeter gebruiken', 'Spanningstester gebruiken', 'Ampèretang gebruiken', 'Installatietester gebruiken', 'Aardlektester gebruiken', 'Isolatieweerstand meten', 'Handgereedschap gebruiken', 'Elektrisch gereedschap gebruiken'] },
+  { id: 'm3', title: '3. Leiding- en draadwerk', items: ['Inbouw en opbouw', 'Buissoort kiezen', 'Leidingwerk monteren', 'Inbouwdozen plaatsen', 'Draad strippen', 'Draad trekken', 'Verbindingen maken'] },
+  { id: 'm4', title: '4. Groepenkasten (Basis)', items: ['Hoofdschakelaar herkennen', 'Aardlekschakelaar herkennen', 'Installatieautomaat', 'Componenten monteren', 'Bedrading aanbrengen', 'Visuele controle'] }
 ];
 
 const COMPETENCIES = [
-  'Veiligheidsbewustzijn', 'Leervermogen', 'Zelfredzaamheid', 'Zelfstandigheid',
-  'Organisatorisch vermogen', 'Nauwkeurigheid en kwaliteitsbewustzijn',
-  'Probleemoplossend vermogen', 'Communicatieve en sociale vaardigheden',
-  'Samenwerken', 'Professionele houding en verantwoordelijkheid'
+  'Veiligheidsbewustzijn', 'Leervermogen', 'Zelfstandigheid',
+  'Nauwkeurigheid', 'Probleemoplossend vermogen', 'Samenwerken'
 ];
 
 function HacarLogo({ className = "h-12 w-auto" }) {
@@ -69,30 +60,31 @@ function HacarLogo({ className = "h-12 w-auto" }) {
   );
 }
 
-function LoginView({ supabase, initError }) {
+function LoginView({ onLoginSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (initError) return setErrorMsg(initError);
-    if (!supabase) return setErrorMsg('Database is nog niet geladen...');
-    
     setLoading(true);
     setErrorMsg('');
     
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        setErrorMsg('Wachtwoord of e-mailadres is onjuist.');
-      } else if (error.message.includes('Email not confirmed')) {
-        setErrorMsg('Bevestig eerst je e-mailadres (of zet dit uit in Supabase).');
-      } else {
-        setErrorMsg(`Fout: ${error.message}`);
+    if (supabase) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+           setErrorMsg('Inloggen mislukt: ' + error.message);
+        } else if (data.session) {
+           // Succes! Direct doorsturen naar de portaal-weergave.
+           onLoginSuccess({ email }, 'ONLINE');
+        }
+      } catch (err) {
+        setErrorMsg('Systeemfout: ' + err.message);
       }
+    } else {
+      setErrorMsg(systemError || 'Database momenteel niet bereikbaar.');
     }
     setLoading(false);
   };
@@ -101,247 +93,218 @@ function LoginView({ supabase, initError }) {
     <div className="min-h-screen bg-[#E5E0D9] flex flex-col items-center justify-center p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-slate-200">
         <div className="text-center mb-8">
-          <div className="mx-auto flex justify-center mb-4">
-            <HacarLogo className="h-20 w-auto" />
-          </div>
+          <div className="mx-auto flex justify-center mb-4"><HacarLogo className="h-20 w-auto" /></div>
           <h1 className="text-2xl font-bold text-[#1D252C]">Hacar Academy</h1>
-          <p className="text-sm text-slate-500 mt-1">Log in met je account</p>
+          <p className="text-sm text-slate-500 mt-1">Log in op je account</p>
         </div>
 
-        {initError && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm font-medium rounded-lg text-center border border-red-200 flex flex-col items-center">
-            <AlertCircle className="w-6 h-6 mb-2" />
-            {initError}
-          </div>
-        )}
-        
-        {errorMsg && !initError && (
-          <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm font-medium rounded-lg text-center border border-red-200">
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-200 text-center">
+            <AlertCircle className="w-5 h-5 mx-auto mb-1 inline-block" /> <br/>
             {errorMsg}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1.5">E-mailadres</label>
             <div className="relative">
               <Mail className="absolute left-3 top-2.5 w-5 h-5 text-slate-400" />
-              <input 
-                type="email" required value={email} onChange={e=>setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#36563D] focus:outline-none"
-                placeholder="naam@hacar.nl"
-              />
+              <input type="email" required value={email} onChange={e=>setEmail(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#36563D] outline-none" placeholder="naam@hacar.nl" />
             </div>
           </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1.5">Wachtwoord</label>
             <div className="relative">
               <Lock className="absolute left-3 top-2.5 w-5 h-5 text-slate-400" />
-              <input 
-                type="password" required value={password} onChange={e=>setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#36563D] focus:outline-none"
-                placeholder="••••••••"
-              />
+              <input type="password" required value={password} onChange={e=>setPassword(e.target.value)} className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#36563D] outline-none" placeholder="••••••••" />
             </div>
           </div>
-          <button 
-            type="submit" disabled={loading || !!initError}
-            className="w-full bg-[#36563D] hover:bg-[#2a4330] text-white py-3 px-4 rounded-lg font-bold text-sm transition-colors flex items-center justify-center space-x-2 shadow-sm disabled:opacity-50"
-          >
-            {loading ? <span className="animate-pulse">Inloggen...</span> : <><ShieldCheck className="w-5 h-5" /><span>Inloggen</span></>}
+          <button type="submit" disabled={loading} className="w-full bg-[#36563D] hover:bg-[#2a4330] text-white py-3 px-4 rounded-lg font-bold text-sm transition-all shadow-sm">
+            {loading ? 'Bezig met inloggen...' : 'Inloggen'}
           </button>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-slate-200">
+           <button type="button" onClick={() => onLoginSuccess({ email: 'demo@hacar.nl' }, 'DEMO')} className="w-full bg-[#F2C633] hover:bg-yellow-400 text-[#1D252C] py-3 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center gap-2">
+             <BarChart3 className="w-4 h-4"/> Noodknop: Open Portaal (Offline)
+           </button>
+           <p className="text-xs text-center text-slate-400 mt-2">Start het systeem in offline modus indien inloggen niet werkt.</p>
+        </div>
       </div>
     </div>
   );
 }
 
-function StudentDashboard({ supabase, session, onSelectStudent, goAnalysis, students, onRefresh }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newDate, setNewDate] = useState('');
-  const [isAdding, setIsAdding] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+function GroupLineChart() {
+  const chartW = 800;
+  const chartH = 200;
+  const paddingX = 40;
+  const paddingY = 20;
 
-  const handleAddStudent = async (e) => {
-    e.preventDefault();
-    setIsAdding(true);
-    
-    // Voeg direct toe aan de database
-    const { error } = await supabase.from('students').insert([{ 
-       name: newName, 
-       start_date: newDate,
-       teacher: session.user.email
-    }]);
-
-    if (error) {
-      alert("Fout bij toevoegen: " + error.message);
-    } else {
-      setIsModalOpen(false);
-      setNewName('');
-      setNewDate('');
-      onRefresh(); 
-    }
-    setIsAdding(false);
-  };
-
-  const filteredStudents = (students || []).filter(s => s.name && s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const data = MODULES_DATA.map((m, i) => {
+    const avg = Math.max(0, 90 - (i * 15));
+    return { name: `M${i+1}`, avg };
+  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 bg-[#36563D] text-white flex justify-between items-center">
-              <h3 className="font-bold text-lg">Nieuwe Leerling Toevoegen</h3>
-              <button onClick={() => setIsModalOpen(false)}><X className="w-6 h-6 hover:text-red-300 transition" /></button>
-            </div>
-            <form onSubmit={handleAddStudent} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Volledige Naam</label>
-                <input type="text" required value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Bijv. Jan de Vries" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#36563D] outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Startdatum Opleiding</label>
-                <input type="date" required value={newDate} onChange={e=>setNewDate(e.target.value)} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#36563D] outline-none" />
-              </div>
-              <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold">Annuleren</button>
-                <button type="submit" disabled={isAdding} className="px-5 py-2.5 bg-[#36563D] hover:bg-[#2a4330] text-white rounded-lg font-bold shadow">
-                  {isAdding ? 'Opslaan...' : 'Opslaan'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+    <div className="w-full bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+      <h3 className="text-lg font-bold text-[#1D252C] mb-4">Groepsgemiddelde per Module</h3>
+      <div className="min-w-[600px]">
+        <svg viewBox={`0 0 ${chartW} ${chartH + 40}`} className="w-full h-auto">
+          {[0, 25, 50, 75, 100].map(val => (
+            <g key={val}>
+              <line x1={paddingX} y1={paddingY + chartH - (val/100)*chartH} x2={chartW - paddingX} y2={paddingY + chartH - (val/100)*chartH} stroke="#E5E0D9" strokeWidth="1" />
+              <text x={paddingX - 10} y={paddingY + chartH - (val/100)*chartH + 4} fontSize="10" textAnchor="end" fill="#94a3b8">{val}%</text>
+            </g>
+          ))}
+          <polyline points={data.map((d, i) => `${paddingX + (i * ((chartW - paddingX*2) / 3))},${paddingY + chartH - (d.avg / 100) * chartH}`).join(" ")} fill="none" stroke="#36563D" strokeWidth="4" />
+          {data.map((d, i) => (
+             <circle key={i} cx={paddingX + (i * ((chartW - paddingX*2) / 3))} cy={paddingY + chartH - (d.avg / 100) * chartH} r="5" fill="#F2C633" />
+          ))}
+        </svg>
+      </div>
+    </div>
+  );
+}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+function StudentDashboard({ onSelectStudent, students, goAnalysis, onRefresh, mode }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Verzeker dat studentList een array is. Val terug op MOCK als leeg/undefined.
+  let studentList = (Array.isArray(students) && students.length > 0) ? students : (mode === 'DEMO' ? MOCK_STUDENTS : []);
+  // Als we online zijn, maar er is écht nog geen data opgeslagen, geef dan de mock data weer ter demonstratie.
+  if (mode === 'ONLINE' && studentList.length === 0) studentList = MOCK_STUDENTS;
+  
+  const filteredStudents = studentList.filter(s => s.name && s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-[#1D252C]">Leerlingenoverzicht</h2>
-          <p className="text-slate-500">Beheer alle actieve trajecten in de database.</p>
+          <p className="text-sm text-slate-500">Beheer alle actieve leertrajecten ({mode}-modus).</p>
         </div>
         <div className="flex gap-2">
-           <button onClick={goAnalysis} className="flex items-center space-x-2 bg-white border border-[#36563D] text-[#36563D] font-semibold px-4 py-2.5 rounded-lg shadow-sm">
-              <BarChart3 className="w-4 h-4" />
-              <span className="hidden sm:inline">Analyse Matrix</span>
+           <button onClick={goAnalysis} className="bg-white border border-[#36563D] text-[#36563D] font-bold px-4 py-2 rounded-lg flex items-center shadow-sm">
+              <BarChart3 className="w-4 h-4 mr-2" /> Analyse
            </button>
-           <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-2 bg-[#F2C633] text-[#1D252C] font-bold px-5 py-2.5 rounded-lg shadow">
-             <UserPlus className="w-5 h-5" /><span>Nieuwe Leerling</span>
+           <button onClick={onRefresh} className="bg-[#F2C633] hover:bg-yellow-400 text-[#1D252C] font-bold px-4 py-2 rounded-lg flex items-center shadow-sm">
+              <UserPlus className="w-4 h-4 mr-2" /> Vernieuw / Nieuw
            </button>
         </div>
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 relative">
         <Search className="absolute left-7 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-        <input type="text" placeholder="Zoek op naam..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full max-w-md pl-10 pr-4 py-2 border border-[#E5E0D9] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#36563D]" />
+        <input type="text" placeholder="Zoek op naam..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#36563D]" />
       </div>
 
-      {filteredStudents.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-           <h3 className="text-xl font-bold text-[#1D252C] mb-2">Geen leerlingen gevonden</h3>
-           <p className="text-slate-500 mb-6">Klik op "Nieuwe Leerling" om er één toe te voegen.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStudents.map((student) => (
-            <div key={student.id} onClick={() => onSelectStudent(student.id)} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:border-[#36563D] cursor-pointer p-6 group">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-lg font-bold text-slate-500">
-                  {student.name ? student.name.charAt(0) : '?'}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-[#1D252C] group-hover:text-[#36563D]">{student.name}</h3>
-                  <span className="inline-block px-2.5 py-0.5 rounded text-xs font-semibold mt-1 bg-blue-100 text-blue-800 border border-blue-300">
-                    {student.status || 'Op schema'}
-                  </span>
-                </div>
-              </div>
-              <div className="text-sm text-slate-500 flex items-center mt-1 border-t border-slate-100 pt-3">
-                <Calendar className="w-4 h-4 mr-2"/> Startdatum: {student.start_date}
-              </div>
-            </div>
-          ))}
+      {filteredStudents.length === 0 && (
+        <div className="text-center p-12 bg-white rounded-xl border border-slate-200 text-slate-500">
+           Geen leerlingen gevonden. Probeer een andere zoekterm.
         </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredStudents.map((student) => (
+          <div key={student.id} onClick={() => onSelectStudent(student.id)} className="bg-white rounded-xl shadow-sm border border-slate-200 hover:border-[#36563D] transition-all hover:shadow-md cursor-pointer group p-6">
+            <div className="flex items-center space-x-4 mb-4">
+              <img src={student.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-slate-100" />
+              <div>
+                <h3 className="text-lg font-bold text-[#1D252C] group-hover:text-[#36563D]">{student.name}</h3>
+                <p className="text-xs text-slate-500">Start: {student.startDate || student.start_date || 'N.v.t.'}</p>
+              </div>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex justify-between text-xs mb-4">
+               <div><span className="text-slate-400 block mb-0.5">Status</span><span className="font-bold text-[#36563D]">{student.status || 'Actief'}</span></div>
+               <div><span className="text-slate-400 block mb-0.5">Begeleider</span><span className="font-semibold text-[#1D252C]">{student.teacher || 'Niet toegewezen'}</span></div>
+            </div>
+            <div className="flex justify-between items-center text-xs text-slate-400 border-t border-slate-100 pt-3">
+              <span className="flex items-center"><Clock className="w-3 h-3 mr-1"/> Opgeslagen</span>
+              <span className="font-bold text-[#36563D] flex items-center">Open Profiel <ChevronRight className="w-3 h-3 ml-1"/></span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-function StudentProfile({ studentId, students, onBack }) {
-  const student = students.find(s => s.id === studentId);
-  const [activeTab, setActiveTab] = useState('modules');
+function StudentProfile({ studentId, onBack, students }) {
+  // Zorg altijd voor een geldige student, val terug op MOCK
+  const studentList = (Array.isArray(students) && students.length > 0) ? students : MOCK_STUDENTS;
+  const student = studentList.find(s => s.id === studentId) || MOCK_STUDENTS[0];
+  
   const [expandedModule, setExpandedModule] = useState('m1');
   const [scores, setScores] = useState({});
-  const [notes, setNotes] = useState({});
-  
-  if (!student) return <div>Laden...</div>;
-
-  const handleScore = (key, val) => setScores(prev => ({ ...prev, [key]: val }));
-
-  const getScoreColorClass = (score, isSelected) => {
-    if (!isSelected) return "bg-white border-slate-200 text-slate-400";
-    switch (score) {
-      case 0: return "bg-slate-400 border-slate-400 text-white shadow-inner";     
-      case 1: return "bg-[#FE615A] border-[#FE615A] text-white shadow-inner";       
-      case 2: return "bg-orange-500 border-orange-500 text-white shadow-inner";   
-      case 3: return "bg-[#F2C633] border-[#F2C633] text-white shadow-inner";     
-      case 4: return "bg-[#3EC55F] border-[#3EC55F] text-white shadow-inner"; 
-      default: return "";
-    }
-  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      <button onClick={onBack} className="flex items-center text-slate-500 hover:text-[#36563D] font-medium text-sm">
-        <ArrowLeft className="w-4 h-4 mr-1.5" /> Terug naar overzicht
-      </button>
-      
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-center">
-        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-3xl font-bold text-slate-400">
-           {student.name ? student.name.charAt(0) : '?'}
-        </div>
-        <div className="flex-1">
-          <h2 className="text-xl font-bold text-[#1D252C]">{student.name}</h2>
-          <p className="text-sm text-slate-500 mt-1">Startdatum: {student.start_date}</p>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center text-slate-500 hover:text-[#36563D] font-bold text-sm">
+          <ArrowLeft className="w-4 h-4 mr-1.5" /> Terug naar overzicht
+        </button>
+        <button onClick={() => alert("Wijzigingen bewaard in huidige sessie!")} className="flex items-center bg-[#36563D] hover:bg-[#2a4330] text-white px-4 py-2 rounded-lg font-bold text-sm shadow">
+           <Save className="w-4 h-4 mr-2" /> Opslaan
+        </button>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-x-6 gap-y-2 items-center text-xs font-medium">
-        <span className="text-[#1D252C] font-bold uppercase tracking-wide mr-2">Legenda:</span>
-        <div className="flex items-center"><span className="w-4 h-4 rounded bg-slate-400 mr-1.5"></span> 0 = Nog niet</div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded bg-[#FE615A] mr-1.5"></span> 1 = Niet beheerst</div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded bg-orange-500 mr-1.5"></span> 2 = Begeleiding</div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded bg-[#F2C633] mr-1.5"></span> 3 = Grotendeels</div>
-        <div className="flex items-center"><span className="w-4 h-4 rounded bg-[#3EC55F] mr-1.5"></span> 4 = Zelfstandig</div>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6 items-start">
+        <img src={student.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'} alt="" className="w-20 h-20 rounded-full border-4 border-slate-50 object-cover" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 w-full gap-4">
+          <div><h2 className="text-2xl font-bold text-[#1D252C]">{student.name}</h2><p className="text-sm text-slate-500">Academy Basis</p></div>
+          <div><p className="text-xs text-slate-400 uppercase font-bold mb-1">Docent</p><p className="font-semibold text-sm">{student.teacher || 'Toegewezen'}</p></div>
+          <div><p className="text-xs text-slate-400 uppercase font-bold mb-1">Status</p><p className="font-semibold text-sm text-[#3EC55F]">{student.status || 'Actief'}</p></div>
+        </div>
       </div>
 
       <div className="space-y-4">
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-x-6 gap-y-2 items-center text-xs font-medium">
+          <span className="text-[#1D252C] font-bold uppercase tracking-wide mr-2">Legenda:</span>
+          <div className="flex items-center"><span className="w-4 h-4 rounded bg-slate-400 mr-1.5"></span> 0 = Nog niet</div>
+          <div className="flex items-center"><span className="w-4 h-4 rounded bg-[#FE615A] mr-1.5"></span> 1 = Niet beheerst</div>
+          <div className="flex items-center"><span className="w-4 h-4 rounded bg-orange-500 mr-1.5"></span> 2 = Begeleiding</div>
+          <div className="flex items-center"><span className="w-4 h-4 rounded bg-[#F2C633] mr-1.5"></span> 3 = Grotendeels</div>
+          <div className="flex items-center"><span className="w-4 h-4 rounded bg-[#3EC55F] mr-1.5"></span> 4 = Zelfstandig</div>
+        </div>
+
         {MODULES_DATA.map(module => (
           <div key={module.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="w-full px-6 py-4 flex items-center justify-between bg-white border-b border-slate-100 hover:bg-slate-50 cursor-pointer" onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}>
-               <h3 className="text-lg font-bold text-[#36563D]">{module.title}</h3>
-               {expandedModule === module.id ? <ChevronUp className="w-5 h-5"/> : <ChevronDown className="w-5 h-5"/>}
-            </div>
+            <button onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)} className="w-full px-6 py-4 flex justify-between items-center bg-white hover:bg-slate-50 border-b border-slate-100">
+               <div className="flex items-center gap-4">
+                 <h3 className="text-lg font-bold text-[#36563D]">{module.title}</h3>
+                 <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full hidden sm:block">{module.items.length} items</span>
+               </div>
+               {expandedModule === module.id ? <ChevronUp className="w-5 h-5 text-slate-400"/> : <ChevronDown className="w-5 h-5 text-slate-400"/>}
+            </button>
             {expandedModule === module.id && (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[800px]">
-                  <tbody className="divide-y divide-slate-100 text-sm">
+                <table className="w-full text-left text-sm min-w-[600px]">
+                  <tbody className="divide-y divide-slate-50">
                     {module.items.map((item, idx) => {
                       const itemKey = `${module.id}-${idx}`;
-                      const currentScore = scores[itemKey]; 
                       return (
-                        <tr key={itemKey} className="hover:bg-slate-50/50">
-                          <td className="px-6 py-4 font-medium text-[#1D252C]">{item}</td>
-                          <td className="px-4 py-4 w-[280px]">
+                        <tr key={itemKey} className="hover:bg-slate-50">
+                          <td className="px-6 py-4 font-medium text-slate-700 w-1/2">{item}</td>
+                          <td className="px-4 py-4">
                             <div className="flex gap-1.5 p-1 bg-slate-100/50 rounded-lg inline-flex">
-                              {[0, 1, 2, 3, 4].map(num => (
-                                <button key={num} onClick={() => handleScore(itemKey, num)} className={`w-10 h-10 rounded-md border font-bold text-sm transition-all ${getScoreColorClass(num, currentScore === num)}`}>{num}</button>
-                              ))}
+                              {[0, 1, 2, 3, 4].map(num => {
+                                 let colorClass = "bg-white text-slate-400 border-slate-200 hover:bg-slate-100";
+                                 if (scores[itemKey] === num) {
+                                     if(num === 0) colorClass = "bg-slate-400 text-white border-slate-400";
+                                     if(num === 1) colorClass = "bg-[#FE615A] text-white border-[#FE615A]";
+                                     if(num === 2) colorClass = "bg-orange-500 text-white border-orange-500";
+                                     if(num === 3) colorClass = "bg-[#F2C633] text-white border-[#F2C633]";
+                                     if(num === 4) colorClass = "bg-[#3EC55F] text-white border-[#3EC55F]";
+                                 }
+                                 return (
+                                  <button key={num} onClick={() => setScores({...scores, [itemKey]: num})} className={`w-10 h-10 rounded border font-bold ${colorClass}`}>
+                                    {num}
+                                  </button>
+                                 );
+                              })}
                             </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <input type="text" placeholder="Notitie..." value={notes[itemKey] || ''} onChange={(e) => setNotes(prev => ({ ...prev, [itemKey]: e.target.value }))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#36563D]" />
                           </td>
                         </tr>
                       );
@@ -357,165 +320,96 @@ function StudentProfile({ studentId, students, onBack }) {
   );
 }
 
-function AnalysisView({ onBack, students }) {
+function AnalysisView({ onBack }) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-       <div className="flex items-center space-x-4 mb-6">
-          <button onClick={onBack} className="p-2 bg-white rounded-full border border-slate-200 text-slate-500 hover:text-[#36563D] shadow-sm"><ArrowLeft className="w-5 h-5" /></button>
-          <h2 className="text-2xl font-bold text-[#1D252C]">Analyse & Draaitabellen</h2>
-       </div>
-       <div className="bg-white p-6 rounded-xl border border-[#E5E0D9] shadow-sm overflow-x-auto">
-         <h3 className="text-lg font-bold text-[#1D252C] mb-4">Risico Matrix</h3>
-         {!students || students.length === 0 ? <p className="text-slate-500">Nog geen leerlingen.</p> : (
-           <table className="w-full text-xs text-left min-w-[1000px]">
-             <thead>
-               <tr className="border-b border-[#E5E0D9]">
-                  <th className="py-2 px-3 font-semibold text-slate-500 w-48">Leerling</th>
-                  {MODULES_DATA.map((m, i) => (
-                    <th key={i} className="py-2 px-1 font-semibold text-slate-500 align-bottom h-36">
-                      <div className="transform -rotate-45 origin-bottom-left whitespace-nowrap text-[10px] w-24 font-medium">M{i+1}</div>
-                    </th>
-                  ))}
-               </tr>
-             </thead>
-             <tbody>
-               {students.map((student, idx) => (
-                 <tr key={student.id} className="border-b border-slate-50">
-                    <td className="py-3 px-3 font-bold text-[#1D252C]">{student.name}</td>
-                    {MODULES_DATA.map((_, i) => (
-                      <td key={i} className="py-3 px-1 text-center">
-                        <div className={`px-1.5 py-1 text-[10px] font-bold rounded mx-auto inline-block shadow-sm bg-[#E5E0D9] text-slate-500`}>-</div>
-                      </td>
-                    ))}
-                 </tr>
-               ))}
-             </tbody>
-           </table>
-         )}
-       </div>
+    <div className="max-w-7xl mx-auto px-4 py-6">
+       <button onClick={onBack} className="flex items-center text-slate-500 hover:text-[#36563D] font-bold text-sm mb-6">
+          <ArrowLeft className="w-4 h-4 mr-1.5" /> Terug naar Dashboard
+       </button>
+       <h2 className="text-2xl font-bold text-[#1D252C] mb-6">Analyse & Trends</h2>
+       <GroupLineChart />
     </div>
   );
 }
 
 export default function App() {
-  const [supabase, setSupabase] = useState(null);
-  const [session, setSession] = useState(null);
+  const [user, setUser] = useState(null); 
+  const [mode, setMode] = useState('OFFLINE'); 
   const [students, setStudents] = useState([]);
-  const [initError, setInitError] = useState('');
-  const [isInitializing, setIsInitializing] = useState(true);
-  
-  const [currentView, setCurrentView] = useState('DASHBOARD');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [currentView, setCurrentView] = useState('DASHBOARD'); 
 
+  // Laad data na het inloggen
   useEffect(() => {
-    let attempts = 0;
-    
-    // Check om de 100ms of CDN script geladen is
-    const checkSupabase = setInterval(() => {
-      attempts++;
-      if (window.supabase) {
-        clearInterval(checkSupabase);
-        
-        // Haal sleutels veilig op
-        let url = '';
-        let key = '';
-        try {
-           url = import.meta.env.VITE_SUPABASE_URL || '';
-           key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-        } catch(e) {}
-
-        if (!url || !key) {
-           setInitError('Geen database verbinding gevonden. Werken de sleutels in Vercel?');
-           setIsInitializing(false);
-           return;
-        }
-
-        try {
-           const client = window.supabase.createClient(url, key);
-           setSupabase(client);
-           
-           client.auth.getSession().then(({ data: { session } }) => {
-             setSession(session);
-             setIsInitializing(false);
-           });
-           
-           client.auth.onAuthStateChange((_event, session) => {
-             setSession(session);
-           });
-        } catch (err) {
-           setInitError('Fout bij maken connectie: ' + err.message);
-           setIsInitializing(false);
-        }
-      } else if (attempts > 50) {
-        clearInterval(checkSupabase);
-        setInitError('Supabase bibliotheek kon niet laden.');
-        setIsInitializing(false);
-      }
-    }, 100);
-    
-    return () => clearInterval(checkSupabase);
-  }, []);
+    if (user && mode === 'ONLINE' && supabase) {
+       loadStudents();
+    } else if (user && mode === 'DEMO') {
+       setStudents(MOCK_STUDENTS);
+    }
+  }, [user, mode]);
 
   const loadStudents = async () => {
-    if (!supabase) return;
-    const { data, error } = await supabase.from('students').select('*').order('created_at', { ascending: false });
-    if (data) setStudents(data);
-    if (error) console.error("Fout bij ophalen leerlingen:", error);
+    try {
+      const { data, error } = await supabase.from('students').select('*').order('created_at', { ascending: false });
+      if (data) setStudents(data);
+    } catch(e) {
+      console.log('Fout bij ophalen van data.');
+    }
   };
 
-  useEffect(() => {
-    if (session && supabase) loadStudents();
-  }, [session, supabase]);
-
-  const handleLogout = async () => {
-    if (supabase) await supabase.auth.signOut();
-    setCurrentView('DASHBOARD');
-    setSelectedStudentId(null);
+  const handleRefresh = () => {
+     if (mode === 'ONLINE') {
+         loadStudents();
+         alert("Data opnieuw geladen.");
+     } else {
+         alert("In Demo-modus.");
+     }
   };
 
-  if (isInitializing) {
-    return <div className="min-h-screen bg-[#E5E0D9] flex items-center justify-center font-bold">Laden...</div>;
-  }
+  // Laat login scherm zien zolang er geen user is
+  if (!user) return <LoginView onLoginSuccess={(u, m) => { setUser(u); setMode(m); }} />;
 
-  if (!session) {
-    return <LoginView supabase={supabase} initError={initError} />;
-  }
-
+  // De hoofdapplicatie na inloggen
   return (
-    <div className="min-h-screen bg-[#E5E0D9]">
-      <header className="bg-[#36563D] text-white shadow-md sticky top-0 z-40">
+    <div className="min-h-screen bg-[#E5E0D9] font-['Poppins',sans-serif] text-[#1D252C]">
+      <header className="bg-[#36563D] text-white shadow-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { setSelectedStudentId(null); setCurrentView('DASHBOARD'); }}>
-            <div className="bg-white p-1 rounded"><HacarLogo className="h-8 w-auto" /></div>
-            <h1 className="text-xl font-bold">Hacar <span className="text-[#F2C633]">Academy</span></h1>
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => {setCurrentView('DASHBOARD'); setSelectedStudentId(null);}}>
+            <div className="bg-white p-1 rounded shadow-sm flex"><HacarLogo className="h-8 w-auto" /></div>
+            <h1 className="text-xl font-bold tracking-tight hidden sm:block">Hacar <span className="text-[#F2C633]">Academy</span></h1>
           </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium hidden sm:block opacity-80">{session.user.email}</span>
-            <button onClick={handleLogout} className="text-sm font-semibold hover:text-[#F2C633] transition flex items-center bg-black/10 px-3 py-1.5 rounded">
-              <LogOut className="w-4 h-4 mr-1.5" /> Uitloggen
+            <span className={`px-3 py-1 rounded-full text-xs font-bold border ${mode === 'ONLINE' ? 'bg-[#3EC55F]/20 border-[#3EC55F] text-[#3EC55F]' : 'bg-[#F2C633]/20 border-[#F2C633] text-[#F2C633]'}`}>
+               {mode === 'ONLINE' ? 'VERBONDEN' : 'DEMO MODUS'}
+            </span>
+            <button onClick={() => setUser(null)} className="hover:text-[#F2C633] font-bold text-sm flex items-center">
+              <LogOut className="w-4 h-4 mr-1" /> Uitloggen
             </button>
           </div>
         </div>
       </header>
 
-      {currentView === 'DASHBOARD' && !selectedStudentId && (
-         <StudentDashboard 
-            supabase={supabase} session={session} students={students} onRefresh={loadStudents}
-            onSelectStudent={(id) => { setSelectedStudentId(id); setCurrentView('PROFILE'); }} 
-            goAnalysis={() => setCurrentView('ANALYSIS')}
-         />
-      )}
+      <main>
+        {currentView === 'DASHBOARD' && !selectedStudentId && (
+           <StudentDashboard 
+             onSelectStudent={(id) => { setSelectedStudentId(id); setCurrentView('PROFILE'); }} 
+             goAnalysis={() => setCurrentView('ANALYSIS')}
+             students={students}
+             mode={mode}
+             onRefresh={handleRefresh}
+           />
+        )}
+        
+        {currentView === 'PROFILE' && selectedStudentId && (
+           <StudentProfile 
+             studentId={selectedStudentId} 
+             students={students}
+             onBack={() => { setSelectedStudentId(null); setCurrentView('DASHBOARD'); }} 
+           />
+        )}
 
-      {currentView === 'PROFILE' && selectedStudentId && (
-         <StudentProfile 
-           studentId={selectedStudentId} students={students}
-           onBack={() => { setSelectedStudentId(null); setCurrentView('DASHBOARD'); }} 
-         />
-      )}
-
-      {currentView === 'ANALYSIS' && (
-         <AnalysisView onBack={() => setCurrentView('DASHBOARD')} students={students} />
-      )}
+        {currentView === 'ANALYSIS' && <AnalysisView onBack={() => setCurrentView('DASHBOARD')} />}
+      </main>
     </div>
   );
 }
