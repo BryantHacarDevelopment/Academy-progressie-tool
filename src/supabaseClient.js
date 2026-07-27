@@ -12,10 +12,13 @@ function normalizeSupabaseUrl(value) {
     .replace(/\/+$/, '');
 }
 
-const rawUrl = cleanEnvironmentValue(import.meta.env.VITE_SUPABASE_URL);
+const rawUrl = cleanEnvironmentValue(
+  import.meta.env.VITE_SUPABASE_URL
+);
+
 const rawKey = cleanEnvironmentValue(
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
 export let supabase = null;
