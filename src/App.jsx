@@ -13,10 +13,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 let supabase = null;
 let systemError = '';
 
-try {
-  // Haal de waardes direct en veilig op.
-  const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+
+const rawKey = (
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  ''
+).trim();
   
   // Deze regel repareert automatisch Vercel URL fouten (verwijdert slashes en /rest/v1)
   const cleanUrl = rawUrl.toString().trim().replace(/\/+$/, '').replace(/\/rest\/v1\/?$/, '').replace(/\/auth\/v1\/?$/, '');
