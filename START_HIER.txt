@@ -1,0 +1,78 @@
+HACAR ACADEMY - WERKENDE IMPLEMENTATIE
+
+BELANGRIJK
+Werk eerst in een nieuwe GitHub-branch, bijvoorbeeld: academy-v3.
+Je bestaande live website blijft daardoor intact. Vercel maakt voor de branch een Preview Deployment.
+
+STAP 1 - CODE IN EEN NIEUWE BRANCH PLAATSEN
+1. Open de repository Academy-progressie-tool op GitHub.
+2. Maak vanaf main een nieuwe branch: academy-v3.
+3. Upload/vervang in die branch alle bestanden uit deze map.
+4. Controleer dat public/hacar-academy-logo.jpg aanwezig is.
+5. Commit de wijzigingen.
+6. Wacht op de Vercel Preview Deployment.
+
+De preview kan de loginpagina al tonen, maar de applicatie werkt pas volledig na stap 2 en 3.
+
+STAP 2 - DATABASE AANMAKEN
+1. Open Supabase.
+2. Ga naar SQL Editor.
+3. Open lokaal het bestand supabase/migrations/001_academy_schema.sql.
+4. Kopieer de volledige inhoud naar de SQL Editor.
+5. Klik op Run.
+
+Het script maakt de tabellen, rollen, RLS-beveiliging, 14 modules, onderdelen,
+15 competenties en maandrapportages aan.
+
+STAP 3 - JOUW BESTAANDE ACCOUNT BEHEERDER MAKEN
+Voer in Supabase > SQL Editor uit:
+
+update public.profiles
+set role = 'admin',
+    full_name = 'Bryant van Dammen',
+    branch = 'Amsterdam',
+    active = true
+where email = 'VUL-HIER-JOUW-E-MAIL-IN';
+
+Log daarna uit de Academy en opnieuw in.
+
+STAP 4 - VERCEL CONTROLEREN
+In Vercel > Project > Settings > Environment Variables moeten staan:
+- VITE_SUPABASE_URL
+- VITE_SUPABASE_PUBLISHABLE_KEY
+
+Zet ze aan voor Preview en Production. Start daarna een nieuwe deployment.
+
+STAP 5 - ECHTE GEBRUIKERS AANMAKEN VANUIT DE KNOP
+De knop Beheer > Gebruikers > Gebruiker toevoegen is in deze versie echt.
+Daarvoor moet de Edge Function admin-create-user eenmaal worden gedeployed.
+
+EENVOUDIGSTE MANIER VIA SUPABASE DASHBOARD:
+1. Open Supabase > Edge Functions.
+2. Klik Deploy a new function > Via Editor.
+3. Geef de functie exact de naam: admin-create-user
+4. Vervang de voorbeeldcode door de volledige inhoud van:
+   supabase/functions/admin-create-user/index.ts
+5. Laat JWT-verificatie ingeschakeld.
+6. Klik Deploy function.
+
+Daarna kan een beheerder in het portaal een echte Auth-gebruiker maken met naam,
+e-mailadres, tijdelijk wachtwoord, rol en vestiging.
+
+STAP 6 - TESTEN
+1. Open de Vercel Preview URL van de branch academy-v3.
+2. Log in met jouw beheeraccount.
+3. Open Beheer > Gebruikers.
+4. Maak eerst een testdocent aan.
+5. Log uit en test het nieuwe account.
+6. Maak daarna een testmanager en een leerling aan.
+7. Koppel de leerling aan de docent en manager.
+8. Test dat de docent kan beoordelen en de manager alleen kan kijken.
+
+PAS NA JOUW GOEDKEURING
+Merge academy-v3 naar main. Dan pas wordt dit de productieversie.
+
+VEILIGHEID
+- Plaats nooit SUPABASE_SERVICE_ROLE_KEY in Vercel of GitHub.
+- De geheime sleutel blijft uitsluitend binnen Supabase Edge Functions.
+- Deel tijdelijke wachtwoorden veilig met de gebruiker.
