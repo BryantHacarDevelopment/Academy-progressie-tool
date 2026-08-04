@@ -12,7 +12,7 @@ export async function getCurrentProfile(userId) {
   const client = requireSupabase();
   const { data, error } = await client
     .from('profiles')
-    .select('id, full_name, email, role, branch, active')
+    .select('id, full_name, role, branch, active')
     .eq('id', userId)
     .maybeSingle();
 
@@ -158,25 +158,25 @@ export async function getStudentDetail(studentId) {
     listCompetencies(),
     client
       .from('student_item_progress')
-      .select('*')
+      ('*')
       .eq('student_id', studentId),
     client
       .from('student_competency_progress')
-      .select('*')
+      ('*')
       .eq('student_id', studentId),
     client
       .from('student_module_notes')
-      .select('*, author:profiles!student_module_notes_created_by_fkey(full_name, role)')
+      ('*, author:profiles!student_module_notes_created_by_fkey(full_name, role)')
       .eq('student_id', studentId)
       .order('created_at', { ascending: false }),
     client
       .from('student_item_notes')
-      .select('*, author:profiles!student_item_notes_created_by_fkey(full_name, role)')
+      ('*, author:profiles!student_item_notes_created_by_fkey(full_name, role)')
       .eq('student_id', studentId)
       .order('created_at', { ascending: false }),
     client
       .from('monthly_reports')
-      .select('*, author:profiles!monthly_reports_created_by_fkey(full_name), monthly_item_snapshots(*), monthly_competency_snapshots(*)')
+      ('*, author:profiles!monthly_reports_created_by_fkey(full_name), monthly_item_snapshots(*), monthly_competency_snapshots(*)')
       .eq('student_id', studentId)
       .order('report_month', { ascending: false }),
   ]);
@@ -190,7 +190,7 @@ export async function getStudentDetail(studentId) {
 
   const assignmentsResult = await client
     .from('student_assignments')
-    .select('assignment_role, profile:profiles!student_assignments_profile_id_fkey(id, full_name, role, branch)')
+    ('assignment_role, profile:profiles!student_assignments_profile_id_fkey(id, full_name, role, branch)')
     .eq('student_id', studentId);
 
   if (assignmentsResult.error) throw assignmentsResult.error;
@@ -222,7 +222,7 @@ export async function saveItemProgress(studentId, entries, userId) {
   const { data, error } = await client
     .from('student_item_progress')
     .upsert(rows, { onConflict: 'student_id,module_item_id' })
-    .select();
+    ();
 
   if (error) throw error;
   return data ?? [];
@@ -242,7 +242,7 @@ export async function saveCompetencyProgress(studentId, entries, userId) {
   const { data, error } = await client
     .from('student_competency_progress')
     .upsert(rows, { onConflict: 'student_id,competency_id' })
-    .select();
+    ();
 
   if (error) throw error;
   return data ?? [];
@@ -258,7 +258,7 @@ export async function addModuleNote(studentId, moduleId, body, userId) {
       body: body.trim(),
       created_by: userId,
     })
-    .select('*, author:profiles!student_module_notes_created_by_fkey(full_name, role)')
+    ('*, author:profiles!student_module_notes_created_by_fkey(full_name, role)')
     .single();
 
   if (error) throw error;
@@ -275,7 +275,7 @@ export async function addItemNote(studentId, moduleItemId, body, userId) {
       body: body.trim(),
       created_by: userId,
     })
-    .select('*, author:profiles!student_item_notes_created_by_fkey(full_name, role)')
+    ('*, author:profiles!student_item_notes_created_by_fkey(full_name, role)')
     .single();
 
   if (error) throw error;
@@ -314,7 +314,7 @@ export async function saveStudent({ student, managerIds, teacherIds, currentUser
       .from('students')
       .update(values)
       .eq('id', student.id)
-      .select()
+      ()
       .single();
     if (error) throw error;
     savedStudent = data;
@@ -322,7 +322,7 @@ export async function saveStudent({ student, managerIds, teacherIds, currentUser
     const { data, error } = await client
       .from('students')
       .insert({ ...values, created_by: currentUserId })
-      .select()
+      ()
       .single();
     if (error) throw error;
     savedStudent = data;
@@ -373,10 +373,10 @@ export async function getAnalyticsData() {
   const [students, modules, itemProgress, competencies, competencyProgress, reports] = await Promise.all([
     listVisibleStudents(),
     listModules(),
-    client.from('student_item_progress').select('*'),
+    client.from('student_item_progress')('*'),
     listCompetencies(),
-    client.from('student_competency_progress').select('*'),
-    client.from('monthly_reports').select('id, student_id, report_month, status, summary, created_at').order('report_month'),
+    client.from('student_competency_progress')('*'),
+    client.from('monthly_reports')('id, student_id, report_month, status, summary, created_at').order('report_month'),
   ]);
 
   if (itemProgress.error) throw itemProgress.error;
