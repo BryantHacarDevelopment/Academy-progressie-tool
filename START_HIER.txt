@@ -1,78 +1,127 @@
-HACAR ACADEMY - WERKENDE IMPLEMENTATIE
+HACAR ACADEMY MVP - START HIER
 
-BELANGRIJK
-Werk eerst in een nieuwe GitHub-branch, bijvoorbeeld: academy-v3.
-Je bestaande live website blijft daardoor intact. Vercel maakt voor de branch een Preview Deployment.
+Dit pakket is de eerste echt werkende versie.
+Je hoeft niet zelf in de code te rommelen.
 
-STAP 1 - CODE IN EEN NIEUWE BRANCH PLAATSEN
-1. Open de repository Academy-progressie-tool op GitHub.
-2. Maak vanaf main een nieuwe branch: academy-v3.
-3. Upload/vervang in die branch alle bestanden uit deze map.
-4. Controleer dat public/hacar-academy-logo.jpg aanwezig is.
-5. Commit de wijzigingen.
-6. Wacht op de Vercel Preview Deployment.
+WAT WERKT ER?
+- Inloggen met echte Supabase-accounts.
+- Rollen: Beheerder, Docent en Manager.
+- Beheerder kan leerlingen toevoegen en koppelen.
+- Beheerder kan echte gebruikersaccounts toevoegen.
+- Docent kan scores 1 t/m 5 en opmerkingen opslaan.
+- Manager kan alleen kijken.
+- Alle 14 Academy-modules staan in de database.
+- Alle 15 competenties staan in de database.
+- Maandrapporten en een jaaroverzicht werken.
+- Analyses werken.
+- Het echte Hacar Academy-logo staat op de inlogpagina en bovenaan.
 
-De preview kan de loginpagina al tonen, maar de applicatie werkt pas volledig na stap 2 en 3.
+==================================================
+STAP 1 - CODE IN GITHUB ZETTEN
+==================================================
 
-STAP 2 - DATABASE AANMAKEN
+1. Open jouw GitHub-project.
+2. Werk eerst in de branch academy-v3 (of maak academy-mvp).
+3. Upload ALLE bestanden uit deze map.
+4. Klik op Commit changes.
+5. Wacht tot Vercel een groen vinkje geeft.
+
+Je bestaande main-website blijft veilig zolang je niet naar main samenvoegt.
+
+==================================================
+STAP 2 - DATABASE OPNIEUW NETJES OPBOUWEN
+==================================================
+
+LET OP:
+Dit verwijdert alleen oude Academy-testtabellen en Academy-testgegevens.
+Jouw inlogaccount in Supabase Authentication blijft bestaan.
+
 1. Open Supabase.
-2. Ga naar SQL Editor.
-3. Open lokaal het bestand supabase/migrations/001_academy_schema.sql.
-4. Kopieer de volledige inhoud naar de SQL Editor.
+2. Klik links op SQL Editor.
+3. Klik op New query.
+4. Open uit dit pakket:
+   supabase/migrations/001_build_hacar_academy.sql
+5. Kopieer ALLES uit dat bestand.
+6. Plak het in Supabase.
+7. Klik op Run.
+8. Wacht op de groene melding Success.
+
+Dit maakt in één keer:
+- profielen en rollen;
+- leerlingen en koppelingen;
+- 14 modules en alle onderdelen;
+- 15 competenties;
+- scores, opmerkingen en historie;
+- maandrapporten;
+- beveiliging per rol.
+
+==================================================
+STAP 3 - JEZELF BEHEERDER MAKEN
+==================================================
+
+1. Open:
+   supabase/migrations/002_make_first_admin.sql
+2. Vervang twee keer:
+   VUL-HIER-JE-E-MAILADRES-IN
+   door het e-mailadres waarmee jij inlogt.
+3. Kopieer de hele code.
+4. Plak die in een nieuwe Supabase SQL-query.
 5. Klik op Run.
+6. Onderaan moet jouw naam met rol admin verschijnen.
+7. Log uit bij Hacar Academy en log opnieuw in.
 
-Het script maakt de tabellen, rollen, RLS-beveiliging, 14 modules, onderdelen,
-15 competenties en maandrapportages aan.
+Daarna zie je bovenaan de knop Beheer.
 
-STAP 3 - JOUW BESTAANDE ACCOUNT BEHEERDER MAKEN
-Voer in Supabase > SQL Editor uit:
-
-update public.profiles
-set role = 'admin',
-    full_name = 'Bryant van Dammen',
-    branch = 'Amsterdam',
-    active = true
-where email = 'VUL-HIER-JOUW-E-MAIL-IN';
-
-Log daarna uit de Academy en opnieuw in.
-
+==================================================
 STAP 4 - VERCEL CONTROLEREN
-In Vercel > Project > Settings > Environment Variables moeten staan:
+==================================================
+
+Ga naar Vercel > Project > Settings > Environment Variables.
+
+Deze twee regels moeten bestaan:
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_PUBLISHABLE_KEY
 
-Zet ze aan voor Preview en Production. Start daarna een nieuwe deployment.
+Zet ze aan voor Preview en Production.
+Na een wijziging altijd opnieuw deployen.
 
-STAP 5 - ECHTE GEBRUIKERS AANMAKEN VANUIT DE KNOP
-De knop Beheer > Gebruikers > Gebruiker toevoegen is in deze versie echt.
-Daarvoor moet de Edge Function admin-create-user eenmaal worden gedeployed.
+==================================================
+STAP 5 - KNOP 'GEBRUIKER TOEVOEGEN' ECHT AANZETTEN
+==================================================
 
-EENVOUDIGSTE MANIER VIA SUPABASE DASHBOARD:
-1. Open Supabase > Edge Functions.
-2. Klik Deploy a new function > Via Editor.
-3. Geef de functie exact de naam: admin-create-user
-4. Vervang de voorbeeldcode door de volledige inhoud van:
+1. Open Supabase.
+2. Klik op Edge Functions.
+3. Klik op Deploy a new function > Via Editor.
+4. Geef de functie exact deze naam:
+   admin-create-user
+5. Open uit dit pakket:
    supabase/functions/admin-create-user/index.ts
-5. Laat JWT-verificatie ingeschakeld.
-6. Klik Deploy function.
+6. Kopieer alle code naar de Supabase-editor.
+7. Laat JWT-verificatie aan staan.
+8. Klik op Deploy function.
 
-Daarna kan een beheerder in het portaal een echte Auth-gebruiker maken met naam,
-e-mailadres, tijdelijk wachtwoord, rol en vestiging.
+Daarna maakt Beheer > Gebruikers echt een account aan.
+De geheime Supabase-beheersleutel komt niet in GitHub of Vercel terecht.
 
-STAP 6 - TESTEN
-1. Open de Vercel Preview URL van de branch academy-v3.
-2. Log in met jouw beheeraccount.
-3. Open Beheer > Gebruikers.
-4. Maak eerst een testdocent aan.
-5. Log uit en test het nieuwe account.
-6. Maak daarna een testmanager en een leerling aan.
-7. Koppel de leerling aan de docent en manager.
-8. Test dat de docent kan beoordelen en de manager alleen kan kijken.
+==================================================
+STAP 6 - EERSTE TEST
+==================================================
 
-PAS NA JOUW GOEDKEURING
-Merge academy-v3 naar main. Dan pas wordt dit de productieversie.
+1. Log in als beheerder.
+2. Open Beheer > Gebruikers.
+3. Maak een testdocent aan.
+4. Maak een testmanager aan.
+5. Open Beheer > Leerlingen.
+6. Voeg een testleerling toe.
+7. Koppel docent en manager.
+8. Log in als docent en vul een score en opmerking in.
+9. Log in als manager en controleer dat je alleen kunt kijken.
+10. Maak als docent een maandrapport.
 
-VEILIGHEID
-- Plaats nooit SUPABASE_SERVICE_ROLE_KEY in Vercel of GitHub.
-- De geheime sleutel blijft uitsluitend binnen Supabase Edge Functions.
-- Deel tijdelijke wachtwoorden veilig met de gebruiker.
+PAS ALS DIT GOED WERKT:
+Voeg de branch samen met main.
+
+NIET DOEN:
+- Geen service_role key in Vercel zetten.
+- Geen echte sleutel in App.jsx zetten.
+- Niet opnieuw oude SQL-bestanden uitvoeren.

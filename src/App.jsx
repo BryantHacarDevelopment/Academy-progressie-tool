@@ -18,7 +18,7 @@ function FullScreenMessage({ title, text, error = false }) {
         {error && <AlertCircle className="w-7 h-7 text-red-500 mx-auto mb-3" />}
         <h1 className="text-xl font-bold">{title}</h1>
         <p className="text-sm text-slate-500 mt-2 whitespace-pre-wrap">{text}</p>
-        {error && supabase && <button type="button" onClick={() => supabase.auth.signOut()} className="mt-5 bg-[#36563D] text-white rounded-lg px-4 py-2 font-bold text-sm">Uitloggen</button>}
+        {error && supabase && <button type="button" onClick={() => supabase.auth.signOut({ scope: 'local' })} className="mt-5 bg-[#36563D] text-white rounded-lg px-4 py-2 font-bold text-sm">Uitloggen</button>}
       </div>
     </div>
   );
@@ -117,7 +117,7 @@ export default function App() {
   }
 
   async function logout() {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
   }
 
   return (

@@ -1,39 +1,37 @@
-# Hacar Academy Progressieportaal
+# Hacar Academy MVP
 
-Productieversie op basis van de goedgekeurde klikbare preview, met het officiële Hacar Academy-logo.
+Eerste productieklare MVP van het Hacar Academy-progressieportaal.
 
-## Inbegrepen
+## Functionaliteit
 
-- echte Supabase-login;
-- rollen: beheerder, docent en manager;
-- vestigingen Amsterdam, Utrecht en Moordrecht;
-- managerzicht op toegewezen leerlingen en de eigen vestiging;
-- beheerder kan echte Supabase-gebruikers aanmaken via een beveiligde Edge Function;
-- 14 technische modules met beoordeelbare onderdelen;
-- 15 soft-skillcompetenties;
-- scores 1 t/m 5;
-- opmerkingen per module, onderdeel en competentie;
-- maandrapporten en jaarontwikkeling;
-- managementanalyses;
-- Row Level Security;
-- officieel logo op de loginpagina, laadschermen en bovenbalk.
+- Supabase e-mail/wachtwoord-login en blijvende sessies
+- Rollen: beheerder, docent en manager
+- Vestigingen: Amsterdam, Utrecht en Moordrecht
+- Beveiligd leerlingenzicht per rol, vestiging en koppeling
+- Beheer van echte gebruikers via een Supabase Edge Function
+- Beheer van leerlingen en docent-/managerkoppelingen
+- 14 technische Academy-modules
+- 15 soft-skillcompetenties
+- Scores van 1 t/m 5 en opmerkingen per moduleonderdeel
+- Historie van gewijzigde scores in de database
+- Maandrapporten met momentopnames
+- Jaarontwikkeling en managementanalyses
+- Officieel Hacar Academy-logo
 
-Lees eerst `START_HIER.txt` en werk in een aparte GitHub-branch.
+Lees eerst `START_HIER.txt`.
 
-## Gebruikers toevoegen
+## Environment variables
 
-De knop in **Beheer > Gebruikers** maakt een echte gebruiker aan in Supabase Auth. De frontend roept daarvoor `admin-create-user` aan. Die Edge Function controleert de ingelogde sessie en controleert vervolgens in `profiles` of de aanvrager een actieve beheerder is. De geheime beheersleutel staat niet in de browser.
+```env
+VITE_SUPABASE_URL=https://jouw-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+```
 
-## Scoreverdeling
+Nooit een `service_role` key in Vercel of frontendcode plaatsen.
 
-1. Onvoldoende
-2. Basis
-3. Voldoende met begeleiding
-4. Goed en grotendeels zelfstandig
-5. Zelfstandig en gevorderd
+## Build
 
-Een leeg veld betekent: nog niet beoordeeld.
-
-## PDF
-
-PDF-export is de volgende fase, nadat de gegevensinvoer, rollen en rapportages in de praktijk zijn getest.
+```bash
+npm install
+npm run build
+```
