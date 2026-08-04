@@ -17,7 +17,13 @@ export async function getCurrentProfile(userId) {
     .maybeSingle();
 
   if (error) throw error;
-  return data;
+
+if (!data) return null;
+
+return {
+  ...data,
+  role: String(data.role || '').trim().toLowerCase(),
+};
 }
 
 export async function listProfiles() {
